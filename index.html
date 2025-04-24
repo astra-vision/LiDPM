@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="LiDPM is a diffusion model for scene-level LiDAR completion that leverages a vanilla DDPM avoiding the need for local diffusion approximations.">
+  <meta name="keywords" content="LiDPM, LiDAR, SSC, LiDAR Scene Completion, Scene Completion">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LiDPM: Rethinking Point Diffusion for Lidar Scene Completion</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJBCYQV99J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-EJBCYQV99J');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">LiDPM: Rethinking Point Diffusion for Lidar Scene Completion</h1>
+          <h4 class="title is-4">IEEE IV 2025</h4>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://t-martyniuk.github.io/">Tetiana Martyniuk</a><sup>1,2</sup>,</span>
+            <span class="author-block">
+              <a href="https://sites.google.com/site/puygilles/">Gilles Puy</a><sup>1,2</sup>,</span>
+            <span class="author-block">
+              <a href="https://boulch.eu/">Alexandre Boulch</a><sup>1,2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://imagine.enpc.fr/~renaud.marlet/">Renaud Marlet</a><sup>1,2,3</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://rdecharette.github.io/">Raoul de Charette</a><sup>1</sup>,
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Inria,</span>
+            <span class="author-block"><sup>2</sup>valeo.ai,</span>
+            <span class="author-block"><sup>3</sup>LIGM, ENPC, Univ Gustave Eiffel, CNRS, France</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+<!--              <span class="link-block">-->
+<!--                &lt;!&ndash; TODO: change link. &ndash;&gt;-->
+<!--                <a href="https://astra-vision.github.io/lidpm"-->
+<!--                   class="external-link button is-normal is-rounded is-dark">-->
+<!--                  <span class="icon">-->
+<!--                      <i class="fas fa-file-pdf"></i>-->
+<!--                  </span>-->
+<!--                  <span>Paper</span>-->
+<!--                </a>-->
+<!--              </span>-->
+              <span class="link-block">
+                <a href="https://astra-vision.github.io/lidpm"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/astra-vision/LiDPM"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div class="image-container">
+        <img src="./static/images/LiDPM_bigger_zoom.png" alt="LiDPM (ours) w/o refinement, implementing global diffusion" class="image-side-by-side">
+        <img src="./static/images/LiDiff_bigger_zoom.png" alt="LiDiff w/o refinement, implementing local diffusion" class="image-side-by-side">
+      </div>
+      <h2 class="subtitle has-text-centered" style="margin-top: 20px;">
+        <span class="lidpm">LiDPM</span> (left) formulation follows the general DDPM paradigm, yielding more realistic and accurate completions than LiDiff[1] local diffusion (right).
+      </h2>
+<!--      <p class="caption has-text-centered">Caption for the images.</p>-->
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+             Training diffusion models that work directly on
+              lidar points at the scale of outdoor scenes is challenging due
+              to the difficulty of generating fine-grained details from white
+              noise over a broad field of view. The latest works addressing
+              scene completion with diffusion models tackle this problem by
+              reformulating the original DDPM as a local diffusion process.
+              It contrasts with the common practice of operating at the
+              object level where vanilla DDPMs are used.
+          </p>
+          <p>
+             In this work, we
+              close the gap between these two lines of work. We identify
+              approximations in the local diffusion formulation, show that
+              they are not required to operate at the scene level, and that a
+              vanilla DDPM with a well-chosen starting point is enough for
+              completion. Finally, we demonstrate that our method, <span class="lidpm">LiDPM</span>,
+              leads to better results in scene completion on SemanticKITTI[2].
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+</section>
+
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@INPROCEEDINGS{martyniuk2025lidpm,
+      author    = {Martyniuk, Tetiana and Puy, Gilles and Boulch, Alexandre and Marlet, Renaud and de Charette, Raoul},
+      booktitle = {2025 IEEE Intelligent Vehicles Symposium (IV)},
+      title     = {LiDPM: Rethinking Point Diffusion for Lidar Scene Completion},
+      year      = {2025},
+    }</code></pre>
+  </div>
+</section>
+
+  <section class="section pt-4">
+    <div class="container is-max-desktop">
+      <h3 class="title is-4 mt-5">References</h3>
+      <div class="content">
+        <ol class="reference-list">
+          <li>
+            L. Nunes, R. Marcuzzi, B. Mersch, J. Behley, C. Stachniss. <i>Scaling diffusion models to real-world 3d lidar scene completion</i>. CVPR, 2024.
+            <a class="external-link" href="https://arxiv.org/abs/2403.13470" target="_blank" rel="noopener noreferrer">[arXiv]</a>
+          </li>
+          <li>
+            J. Behley, M. Garbade, A. Milioto, J. Quenzel, S. Behnke, C. Stachniss, J. Gall. <i>SemanticKITTI: A Dataset for Semantic Scene Understanding of LiDAR Sequences</i>. CVPR, 2019.
+            <a class="external-link" href="https://arxiv.org/abs/1904.01416" target="_blank" rel="noopener noreferrer">[arXiv]</a>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section pt-4">
+    <div class="container is-max-desktop">
+      <h3 class="title is-4 mt-5">Acknowledgements</h3>
+      <div class="content">
+        This work has been carried out using HPC resources from
+        GENCI-IDRIS (grants AD011014484R1, AD011012883R3). <br>
+
+        We thank Mickael Chen and Corentin Sautier for the proof-
+        reading and valuable feedback.
+      </div>
+    </div>
+  </section>
+
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            The website template was borrowed from <a
+              href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

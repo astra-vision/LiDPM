@@ -1,16 +1,6 @@
-<div align="center">
+# LiDPM
 
-# LiDPM: Rethinking Point Diffusion for Lidar Scene Completion
-[![Conference](https://img.shields.io/badge/IEEE_IV-2025-blue)](https://www.ecva.net/papers/eccv_2022/papers_ECCV/papers/136820625.pdf)
-[![Project WebPage](https://img.shields.io/badge/Project-webpage-%23fc4d5d)](https://astra-vision.github.io/lidpm)
+This is the repository that contains source code for the [LiDPM website](https://astra-vision.github.io/lidpm).
 
-</div>
-
-This is an official repository for the paper
-```
-LiDPM: Rethinking Point Diffusion for Lidar Scene Completion
-Tetiana Martyniuk, Gilles Puy, Alexandre Boulch, Renaud Marlet, Raoul de Charette
-IEEE IV 2025
-```
-
-**Code coming soon, stay tuned!** 🔥
+# Website License
+<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.

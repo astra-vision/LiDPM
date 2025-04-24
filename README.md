@@ -2,7 +2,7 @@
 
 # LiDPM: Rethinking Point Diffusion for Lidar Scene Completion
 [![Conference](https://img.shields.io/badge/IEEE_IV-2025-blue)](https://ieee-iv.org/2025/)
-[![Project WebPage](https://img.shields.io/badge/Project-webpage-%23fc4d5d)](https://astra-vision.github.io/lidpm)
+[![Project WebPage](https://img.shields.io/badge/Project-webpage-%23fc4d5d)](https://astra-vision.github.io/LiDPM/)
 
 </div>
 

@@ -1,0 +1,4 @@
+data_path: #in the form of /datasets/semantic_kitti/dataset/sequences
+gt_output_path: #output_folder
+voxel_size: 0.1
+mode: bare #labels / bare

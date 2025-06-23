@@ -1,0 +1,59 @@
+experiment:
+    id: diffusion
+
+##Data
+data:
+    data_dir: #the path to your SemanticKITTI dataset, e.g., '/datasets/semantic_kitti'
+    gt_map_dir: #the path to the folder with the GT maps that you generated at the previous step
+    canonical_minival: './data/minival.txt'
+    resolution: 0.05 # MinkUNet parameters, quantization resolution
+    dataloader: 'KITTI'
+    split: 'train'
+    train: [ '00', '01', '02', '03', '04', '05', '06', '07', '09', '10' ]
+    validation: [ '08' ]
+    test: ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21']
+    num_points: 180000 #sampling for the GT
+    range: radius #radius, ssc_kitti_box
+    range_limits:
+        ssc_kitti_box:
+            min_limits: [0, -25.6, -2]
+            max_limits: [51.2, 25.6, 4.4]
+            margin: 0.2
+        radius:
+            max_range: 50
+    duplication_factor: 10
+    num_validation_pointclouds: 2
+
+##Training
+train:
+    seed: 42
+    uncond_prob: 0.1 #1. #0.1
+    uncond_w: 6. #0. #6.
+    n_gpus: 4
+    max_epoch: 50
+    lr: 0.0001 # https://www.cs.princeton.edu/~smalladi/blog/2024/01/22/SDEs-ScalingRules/
+    beta1: 0.9
+    beta2: 0.999
+    eps: !!float 1e-08
+    batch_size: 2
+    decay_lr: 1.0e-4
+    check_val_every_n_epoch: 5
+    num_workers: 4
+    freq_ckpt: 1
+    limit_train_batches: 1.0
+    limit_val_batches: 1
+    num_sanity_val_steps: 1
+    thresholds_num: 100
+    accelerator: ddp
+
+diff:
+    beta_start: 3.5e-5
+    beta_end: 0.007
+    beta_func: 'linear'
+    t_steps: 1000
+    t_steps_train: 1000
+
+##Network
+model:
+    out_dim: 96
+    in_dim: 3

@@ -1,0 +1,10 @@
+dataset/sequences/08/velodyne/000400.bin
+dataset/sequences/08/velodyne/000800.bin
+dataset/sequences/08/velodyne/001200.bin
+dataset/sequences/08/velodyne/001600.bin
+dataset/sequences/08/velodyne/002000.bin
+dataset/sequences/08/velodyne/002400.bin
+dataset/sequences/08/velodyne/002800.bin
+dataset/sequences/08/velodyne/003200.bin
+dataset/sequences/08/velodyne/003600.bin
+dataset/sequences/08/velodyne/004000.bin

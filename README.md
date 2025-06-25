@@ -19,7 +19,7 @@ IEEE IV 2025
 ```
 
 **Updates:**
-- 23/06/2025: training code released.
+- 25/06/2025: training and inference code released.
 
 
 ## Installation
@@ -70,15 +70,14 @@ SemanticKITTI
 
 ## Ground truth generation
 
-To generate the complete scenes you can run the `map_from_scans.py` script. 
-This will use the dataset scans and poses to generate the sequence map to be used as ground truth during training:
-Specify the SemanticKITTI path and the output path in the corresponding config.
+To generate the complete scenes run the `map_from_scans.py` script. 
+This will use the dataset scans and poses to generate the sequence map to be used as the ground truth during training.
+
+Specify the SemanticKITTI path and the output path in the corresponding config file.
 ```
 cd lidpm/scripts
 python map_from_scans.py configs/map_from_scans.yaml
 ```
-
-Once the sequence maps are generated you can then train the model.
 
 ## Training the model
 
@@ -92,7 +91,24 @@ For training the diffusion model, the configurations are defined in `config/trai
 cd lidpm
 python train.py --config config/train.yaml
 ```
+Don't forget to specify the `data_dir` and `gt_map_dir` in the config file.
+
 The training was performed on 4 NVIDIA A100 GPUs for 40 epochs.
+
+## Inference
+
+<p align="center">
+  <img src="./media/inference.png" width="50%" />
+</p>
+
+To complete the lidar scans, run
+```
+cd scripts
+python inference.py configs/inference.yaml
+```
+In the corresponding config you should specify the path to the diffusion checkpoint, dataset path, and output folder, 
+and decide if you want to run inference on a particular sequence or over the list of predefined pointclouds 
+(configured in `canonical_minival_filename`).
 
 ## Citation
 
@@ -109,5 +125,6 @@ If you build upon LiDPM paper or code, please cite the following paper:
 
 ### Acknowledgments
 
-This code is developed upon [LiDiff](https://github.com/PRBonn/LiDiff/tree/main) codebase.
+This code is developed upon the [LiDiff](https://github.com/PRBonn/LiDiff/tree/main) codebase.
 We modify it to depart from the "local" diffusion paradigm to the "global" one presented in [LiDPM](https://astra-vision.github.io/LiDPM/) paper.
+We thank the authors for making their work publicly available.

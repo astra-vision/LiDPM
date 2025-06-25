@@ -1,0 +1,19 @@
+exp_name: diffusion_lidpm_private_clean
+
+diff: /home/tmartyni/workspace/code/LiDPM/lidpm/checkpoints/diffusion/lidpm_diffusion_clean.ckpt #path_to_the_diffusion_checkpoint
+dataset_path: /datasets_local/semantic_kitti #path to SemanticKITTI, e.g., /datasets/SemanticKITTI
+canonical_minival_filename: ../data/minival.txt
+output_folder: /home/tmartyni/workspace/code/LiDPM/lidpm/results/inference
+
+denoising_steps: 300 #specify intermediate timestep to start the diffusion from
+cond_weight: 6.0 #0.0
+num_points: 180000
+duplication_factor: 10
+range: radius
+
+minival: False #if False - the whole sequence
+start_index: 0
+end_index:
+sequence: 08
+
+seed: 42

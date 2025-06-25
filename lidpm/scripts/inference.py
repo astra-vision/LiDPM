@@ -306,8 +306,7 @@ def main(config_path, **kwargs):
 
     for pcd_path in tqdm.tqdm(selected_files):
         str_index = pcd_path.split('/')[-1].split('.')[0]
-        if str_index != '001330':#'001330':
-            continue
+
         print(f"Now processing: {str_index + '.ply'}")
         diff_completion = DiffCompletion(config, full_exp_dir)
 

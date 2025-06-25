@@ -435,13 +435,6 @@ class MinkUNetDiffIN(nn.Module):
         full_c = x_full.C.clone().float()
         part_c = x_part.C.clone().float()
 
-        # print('SHAPES:')
-        # print(full_c.shape, part_c.shape)
-        # print('\n')
-        # print('MAX and MIN values:')
-        # print(full_c.max(), full_c.min())
-        # print(part_c.max(), part_c.min())
-
         # hash batch coord
         max_coord = full_c.max()
         full_c[:, 0] *= max_coord * 2.

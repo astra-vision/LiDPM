@@ -95,6 +95,10 @@ Don't forget to specify the `data_dir` and `gt_map_dir` in the config file.
 
 The training was performed on 4 NVIDIA A100 GPUs for 40 epochs.
 
+## Model Weights
+
+You can download the pre-trained model checkpoint from the [GitHub release](https://github.com/astra-vision/LiDPM/releases/tag/v1.0-weights).
+
 ## Inference
 
 <p align="center">
@@ -131,4 +135,4 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 This code is developed upon the [LiDiff](https://github.com/PRBonn/LiDiff/tree/main) codebase.
 We modify it to depart from the "local" diffusion paradigm to the "global" one presented in [LiDPM](https://astra-vision.github.io/LiDPM/) paper.
-We thank the authors for making their work publicly available.
+We thank the authors of LiDiff for making their work publicly available.

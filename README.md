@@ -123,7 +123,11 @@ If you build upon LiDPM paper or code, please cite the following paper:
     }
 ```
 
-### Acknowledgments
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
+
+## Acknowledgments
 
 This code is developed upon the [LiDiff](https://github.com/PRBonn/LiDiff/tree/main) codebase.
 We modify it to depart from the "local" diffusion paradigm to the "global" one presented in [LiDPM](https://astra-vision.github.io/LiDPM/) paper.

@@ -1,6 +1,6 @@
 from torch.utils.data import DataLoader
 from pytorch_lightning import LightningDataModule
-from lidpm.data.dataloader.SemanticKITTI import KITTIDataSet
+from lidpm.data.SemanticKITTI import KITTIDataSet
 from lidpm.utils.collations import SparseSegmentCollation
 import warnings
 

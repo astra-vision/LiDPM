@@ -79,7 +79,6 @@ class DiffusionPoints(LightningModule):
         self.duplication_factor = self.hparams['data']['duplication_factor']
         self.num_points = self.hparams['data']['num_points']
 
-
     def q_sample(self, x, t, noise):
         return self.sqrt_alphas_cumprod[t][:, None, None].to(self.device) * x + \
             self.sqrt_one_minus_alphas_cumprod[t][:, None, None].to(self.device) * noise
@@ -102,14 +101,15 @@ class DiffusionPoints(LightningModule):
         return out.reshape(t.shape[0], -1, num_feat)
 
     def points_to_tensor(self, x_feats, bs):
-        x_feats = ME.utils.batched_coordinates(list(x_feats[:]), dtype=torch.float32, device=self.device) # [B * 180k, 1 + dim]
+        x_feats = ME.utils.batched_coordinates(list(x_feats[:]), dtype=torch.float32,
+                                               device=self.device)
 
         x_coord = x_feats.clone()
         x_coord[:, 1:] = feats_to_coord(x_feats[:, 1:], self.hparams['data']['resolution'], bs)
 
         x_t = ME.TensorField(
             features=x_feats[:, 1:],
-            coordinates=x_coord, #spatial locations of the input points (voxels), should come in shape [N, 4], where 4 is batch_index + x + y + z
+            coordinates=x_coord,
             quantization_mode=ME.SparseTensorQuantizationMode.UNWEIGHTED_AVERAGE,
             minkowski_algorithm=ME.MinkowskiAlgorithm.SPEED_OPTIMIZED,
             device=self.device,
@@ -130,8 +130,7 @@ class DiffusionPoints(LightningModule):
 
         x_full = self.points_to_tensor(t_sample, bs)
 
-
-        # # for classifier-free guidance switch between conditional and unconditional training
+        # for classifier-free guidance switch between conditional and unconditional training
         if torch.rand(1) > self.hparams['train']['uncond_prob']:
             scaled_pcd_part = self.q_sample(batch['pcd_part'], t, torch.zeros_like(batch['pcd_part']))
             scaled_x_part = self.points_to_tensor(scaled_pcd_part, bs)
@@ -164,7 +163,6 @@ class DiffusionPoints(LightningModule):
             t = torch.ones(bs).long().to(self.device) * (self.t_steps_train - 1)
             q_sampled_noised_pcd = self.q_sample(batch['pcd_full'], t, noise)  # sample p_m [step t]
 
-            # replace the original points with the noise sampled
             x_full = self.points_to_tensor(q_sampled_noised_pcd, bs)
 
             if self.hparams['train']['uncond_prob'] < 1.:
@@ -173,7 +171,6 @@ class DiffusionPoints(LightningModule):
                 )
             else:
                 x_cond = None
-            # x_cond = None
 
             x_uncond = self.points_to_tensor(
                 torch.zeros_like(batch['pcd_part']), bs
@@ -183,7 +180,8 @@ class DiffusionPoints(LightningModule):
             x_gen_eval = x_gen_eval.F.reshape((bs, -1, 3)).detach()
 
             # save x_gen_eval as separate .txt pointclouds
-            for (pcd_gen, pcd_gt, noised_pdc, filename) in zip(x_gen_eval, gt_pts, q_sampled_noised_pcd, batch['filename']):
+            for (pcd_gen, pcd_gt, noised_pdc, filename) in zip(x_gen_eval, gt_pts, q_sampled_noised_pcd,
+                                                               batch['filename']):
                 idx = filename.split('/')[-1].split('.')[0]
                 np.savetxt(f'{self.logger.log_dir}/val_pcds/{idx}_gt.txt',
                            pcd_gt)
@@ -216,10 +214,10 @@ class DiffusionPoints(LightningModule):
             if x_part:
                 est_noise_cond = self.forward(x_full, x_full_sparse, x_part, t)
                 est_noise_zero_cond = self.forward(x_full, x_full_sparse, x_zeros, t)
-                estimated_noise = est_noise_zero_cond + self.hparams['train']['uncond_w'] * (est_noise_cond - est_noise_zero_cond)
+                estimated_noise = est_noise_zero_cond + self.hparams['train']['uncond_w'] * (
+                        est_noise_cond - est_noise_zero_cond)
             else:
                 estimated_noise = self.forward(x_full, x_full_sparse, x_zeros, t)
-
 
             x_t_minus_one = scale_factor * (
                     x_full.F.reshape(bs, -1, 3) - scale_factor_noise * estimated_noise
@@ -233,11 +231,9 @@ class DiffusionPoints(LightningModule):
         return x_full
 
     def validation_epoch_end(self, outputs):
-        # Compute the Chamfer distance metrics
         chamfer_metrics = self.val_chamfer_distance.compute()
         pr, re, f1 = self.precision_recall.compute()
 
-        # Log metrics
         self.log("val/chamfer_gt2pred_norm", chamfer_metrics['gt2pred'], on_epoch=True)
         self.log("val/chamfer_pred2gt_norm", chamfer_metrics['pred2gt'], on_epoch=True)
         self.log("val/chamfer_symmetric_norm", chamfer_metrics['ch_bidirect'], on_epoch=True)
@@ -246,11 +242,11 @@ class DiffusionPoints(LightningModule):
         self.log('val/recall', re, on_epoch=True)
         self.log('val/fscore', f1, on_epoch=True)
 
-        # Reset the metric for the next epoch
         self.val_chamfer_distance.reset()
         self.precision_recall.reset()
 
     def configure_optimizers(self):
+        # https://www.cs.princeton.edu/~smalladi/blog/2024/01/22/SDEs-ScalingRules/
         effective_bs = self.hparams['train']['n_gpus'] * self.hparams['train']['batch_size']
         multiplier = effective_bs / 2
         optimizer = torch.optim.Adam(

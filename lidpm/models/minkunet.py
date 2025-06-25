@@ -526,6 +526,3 @@ class MinkUNetDiffIN(nn.Module):
         y4 = self.up4[1](y4)
 
         return self.last(y4.slice(x).F)
-
-
-

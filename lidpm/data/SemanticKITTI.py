@@ -14,10 +14,6 @@ from os.path import join
 warnings.filterwarnings('ignore')
 
 
-#################################################
-################## Data loader ##################
-#################################################
-
 class KITTIDataSet(Dataset):
     def __init__(self, data_dir, gt_map_dir, seqs, split, resolution, num_points, range_limits, duplication_factor,
                  minival_path, num_validation_pointclouds):
@@ -40,7 +36,6 @@ class KITTIDataSet(Dataset):
 
         # list of (shape_name, shape_txt_file_path) tuple
         self.datapath_list(self.split)
-        self.data_stats = {'mean': None, 'std': None}
 
         self.nr_data = len(self.points_datapath)
         print('\n The size of %s data is %d.\n' % (self.split, len(self.points_datapath)))
@@ -61,7 +56,7 @@ class KITTIDataSet(Dataset):
                 point_seq_bin = natsorted(glob(join(point_seq_path, 'velodyne', '*.bin')))
             elif mode == 'validation':
                 with open(self.minival_path, 'r') as file:
-                    point_seq_bin = [line.strip() for line in file][: self.validation_size]
+                    point_seq_bin = [join(self.data_dir, line.strip()) for line in file][: self.validation_size]
 
             for file_name in point_seq_bin:
                 idx = int(os.path.basename(file_name).split('.')[0])
@@ -143,11 +138,7 @@ class KITTIDataSet(Dataset):
             self.num_points,
             n_part,
             self.points_datapath[index],
-            p_mean=self.data_stats['mean'],
-            p_std=self.data_stats['std'],
         )
 
     def __len__(self):
         return self.nr_data
-
-##################################################################################################

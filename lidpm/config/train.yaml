@@ -3,9 +3,9 @@ experiment:
 
 ##Data
 data:
-    data_dir: #the path to your SemanticKITTI dataset, e.g., '/datasets/semantic_kitti'
+    data_dir: #the path to your SemanticKITTI dataset, e.g., '/datasets/SemanticKITTI'
     gt_map_dir: #the path to the folder with the GT maps that you generated at the previous step
-    canonical_minival: './data/minival.txt'
+    canonical_minival: './data/minival.txt' #validate on pre-selected PCs from the validation set (every 400th by default)
     resolution: 0.05 # MinkUNet parameters, quantization resolution
     dataloader: 'KITTI'
     split: 'train'
@@ -27,11 +27,11 @@ data:
 ##Training
 train:
     seed: 42
-    uncond_prob: 0.1 #1. #0.1
-    uncond_w: 6. #0. #6.
+    uncond_prob: 0.1
+    uncond_w: 6.
     n_gpus: 4
     max_epoch: 50
-    lr: 0.0001 # https://www.cs.princeton.edu/~smalladi/blog/2024/01/22/SDEs-ScalingRules/
+    lr: 0.0001
     beta1: 0.9
     beta2: 0.999
     eps: !!float 1e-08

@@ -12,7 +12,7 @@ import torch
 import yaml
 import MinkowskiEngine as ME
 
-import lidpm.data.datasets as datasets
+import lidpm.data.datamodule as datamodule
 import lidpm.models.models as models
 import os
 
@@ -70,18 +70,12 @@ def main(config, weights, checkpoint, test):
             ckpt_cfg['experiment']['id'] = cfg['experiment']['id']
             ckpt_cfg['use_ddp'] = cfg['use_ddp']
 
-            if 'dataset_norm' not in ckpt_cfg['data'].keys():
-                ckpt_cfg['data']['dataset_norm'] = False
-                ckpt_cfg['data']['std_axis_norm'] = False
-            # if 'max_range' not in ckpt_cfg['data'].keys():
-            #     ckpt_cfg['data']['max_range'] = 10.
-
             cfg = ckpt_cfg
 
         model = models.DiffusionPoints.load_from_checkpoint(weights, hparams=cfg)
         print(model.hparams)
 
-    data = datasets.dataloaders[cfg['data']['dataloader']](cfg)
+    data = datamodule.dataloaders[cfg['data']['dataloader']](cfg)
 
     #region callbacks
     lr_monitor_step = LearningRateMonitor(logging_interval='step')
@@ -102,7 +96,7 @@ def main(config, weights, checkpoint, test):
         filename="best-epoch={epoch}-step={step}-val_ch_sym={val/chamfer_symmetric_norm:.2f}",
         save_top_k=3,
         monitor="val/chamfer_symmetric_norm",
-        mode="min"  # Assuming lower is better for 'val/cd_mean_epoch'
+        mode="min"
     )
     # endregion
 

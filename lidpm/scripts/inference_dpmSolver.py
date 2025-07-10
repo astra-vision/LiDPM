@@ -3,6 +3,7 @@ import MinkowskiEngine as ME
 import torch
 import lidpm.models.minkunet as minknet
 import open3d as o3d
+from diffusers import DPMSolverMultistepScheduler
 from pytorch_lightning.core.lightning import LightningModule
 import yaml
 import os
@@ -23,6 +24,7 @@ class DiffCompletion(LightningModule):
 
         ckpt_diff = torch.load(config['diff'])
         denoising_steps = config['denoising_steps']
+        self.starting_point = config['starting_point']
         self.save_hyperparameters(ckpt_diff['hyper_parameters'])
         assert denoising_steps <= self.hparams['diff']['t_steps'], \
             f"The number of denoising steps on inference cannot be bigger than it was trained with, T={self.hparams['diff']['t_steps']} (you've set '-T {denoising_steps}')"
@@ -35,7 +37,18 @@ class DiffCompletion(LightningModule):
         self.model.eval()
         self.cuda()
 
-        self.betas = self.linear_beta_schedule(1000, 3.5e-5, 0.007)
+        full_betas = self.linear_beta_schedule(
+            self.hparams['diff']['t_steps'],
+            self.hparams['diff']['beta_start'],
+            self.hparams['diff']['beta_end'],
+        )
+        beta_end = full_betas[self.starting_point].item()
+
+        self.betas = self.linear_beta_schedule(
+            self.starting_point,
+            self.hparams['diff']['beta_start'],
+            beta_end
+        )
 
         self.alphas = 1. - self.betas
         self.alphas_cumprod = torch.tensor(
@@ -48,6 +61,17 @@ class DiffCompletion(LightningModule):
         # Not to overwrite the self.hparams from the checkpoints, but to create a separate field for the inference values
         self.hparams['inference'] = {}
         self.hparams['inference']['s_steps'] = denoising_steps
+
+        self.dpm_scheduler = DPMSolverMultistepScheduler(
+            num_train_timesteps=self.starting_point,
+            beta_start=self.hparams['diff']['beta_start'],
+            beta_end=beta_end,
+            beta_schedule='linear',
+            algorithm_type='sde-dpmsolver++',
+            solver_order=2,
+        )
+        self.dpm_scheduler.set_timesteps(denoising_steps)
+        self.scheduler_to_cuda()
 
         self.hparams['inference']['uncond_w'] = config['cond_weight']
         self.w_uncond = self.hparams['inference']['uncond_w']
@@ -76,6 +100,16 @@ class DiffCompletion(LightningModule):
     @staticmethod
     def linear_beta_schedule(timesteps, beta_start, beta_end):
         return torch.linspace(beta_start, beta_end, timesteps)
+
+    def scheduler_to_cuda(self):
+        self.dpm_scheduler.timesteps = self.dpm_scheduler.timesteps.cuda()
+        self.dpm_scheduler.betas = self.dpm_scheduler.betas.cuda()
+        self.dpm_scheduler.alphas = self.dpm_scheduler.alphas.cuda()
+        self.dpm_scheduler.alphas_cumprod = self.dpm_scheduler.alphas_cumprod.cuda()
+        self.dpm_scheduler.alpha_t = self.dpm_scheduler.alpha_t.cuda()
+        self.dpm_scheduler.sigma_t = self.dpm_scheduler.sigma_t.cuda()
+        self.dpm_scheduler.lambda_t = self.dpm_scheduler.lambda_t.cuda()
+        self.dpm_scheduler.sigmas = self.dpm_scheduler.sigmas.cuda()
 
     def points_to_tensor(self, points):
         x_feats = ME.utils.batched_coordinates(list(points[:]), dtype=torch.float32, device=self.device)
@@ -177,9 +211,9 @@ class DiffCompletion(LightningModule):
     def denoise_scan(self, scan):
         input_pcd, cond_pcd = self.preprocess_scan(scan)
 
-        if self.hparams['inference']['s_steps'] > 0:
+        if self.starting_point > 0:
             noise = torch.randn(input_pcd.shape, device=self.device)
-            t = torch.ones(1).long().to(self.device) * (self.hparams['inference']['s_steps'] - 1)
+            t = torch.ones(1).long().to(self.device) * (self.starting_point - 1)
             q_sampled_noised_pcd = self.q_sample(input_pcd, t, noise)
 
             x_full = self.points_to_tensor(q_sampled_noised_pcd)
@@ -206,26 +240,17 @@ class DiffCompletion(LightningModule):
         # x_t - noised TensorField pointcloud
         # x_cond - clean TensorField conditioning pointcloud
 
-        for t in tqdm.tqdm(range(self.hparams['inference']['s_steps'] - 1, -1, -1)):
-            scale_factor_noise = self.betas[t] / self.sqrt_one_minus_alphas_cumprod[t]
-            scale_factor = self.sqrt_recip_alphas[t]
-            sigma_t = torch.sqrt(self.betas)[t]
-            if t > 0:
-                noise = torch.randn((1, self.hparams['inference']['num_points'], 3), device=self.device)
-            else:
-                noise = torch.zeros((1, self.hparams['inference']['num_points'], 3), device=self.device)
-            t = torch.ones(1).long().to(self.device) * t
-
+        for t in tqdm.tqdm(self.dpm_scheduler.timesteps):
+            t_tensor = torch.tensor([t], device=self.device)
             x_full_sparse = x_full.sparse()
 
-            est_noise_cond = self.forward(x_full, x_full_sparse, x_cond, t)
-            est_noise_zero_cond = self.forward(x_full, x_full_sparse, x_uncond, t)
+            est_noise_cond = self.forward(x_full, x_full_sparse, x_cond, t_tensor)
+            est_noise_zero_cond = self.forward(x_full, x_full_sparse, x_uncond, t_tensor)
 
-            estimated_noise = est_noise_zero_cond + self.hparams['inference']['uncond_w'] * (
+            estimated_noise = est_noise_zero_cond + self.w_uncond * (
                     est_noise_cond - est_noise_zero_cond)
 
-            x_t_minus_one = scale_factor * (
-                    x_full.F.reshape(1, -1, 3) - scale_factor_noise * estimated_noise) + sigma_t * noise
+            x_t_minus_one = self.dpm_scheduler.step(estimated_noise, t, x_full.F.reshape(1, -1, 3)).prev_sample
             x_full = self.points_to_tensor(x_t_minus_one)
 
             x_cond, x_uncond = self.reset_partial_pcd(x_cond)
@@ -279,6 +304,7 @@ def prepare_outputs(config, timestamp, selected_files):
 @click.option('--sequence', type=str, help='sequence')
 @click.option('--seed', type=int, help='seed')
 @click.option('--end_index', type=int, help='end index')
+@click.option('--starting_point', '-t0', type=int, help='starting point t0 of diffusion')
 def main(config_path, **kwargs):
     ctx = click.get_current_context()
     config = smart_config(config_path, ctx)

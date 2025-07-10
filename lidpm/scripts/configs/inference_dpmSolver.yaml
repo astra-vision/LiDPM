@@ -1,0 +1,20 @@
+exp_name: diffusion_dpmSolver
+
+diff: #path_to_the_diffusion_checkpoint
+dataset_path: #path to SemanticKITTI, e.g., /datasets/SemanticKITTI
+canonical_minival_filename: ../data/minival.txt
+output_folder:
+
+denoising_steps: 20 #specify the number of DPM-Solver steps
+starting_point: 300 #specify the starting point of the diffusion
+cond_weight: 6.0 #0.0
+num_points: 180000
+duplication_factor: 10
+range: radius
+
+minival: False #if False - the whole sequence
+start_index: 0
+end_index:
+sequence: 08
+
+seed: 42

@@ -1,6 +1,7 @@
 <div align="center">
 
 # LiDPM: Rethinking Point Diffusion for Lidar Scene Completion
+
 [![Paper](https://img.shields.io/badge/arXiv-2504.17791-brightgreen)](https://arxiv.org/abs/2504.17791)
 [![Conference](https://img.shields.io/badge/IEEE_IV-2025-blue)](https://ieee-iv.org/2025/)
 [![Project WebPage](https://img.shields.io/badge/Project-webpage-%23fc4d5d)](https://astra-vision.github.io/LiDPM/)
@@ -11,7 +12,8 @@
   <img src="./media/teaser.png" width="90%" />
 </p>
 
-This is an official repository for the paper
+This is the official repository for the paper
+
 ```
 LiDPM: Rethinking Point Diffusion for Lidar Scene Completion
 Tetiana Martyniuk, Gilles Puy, Alexandre Boulch, Renaud Marlet, Raoul de Charette
@@ -19,8 +21,22 @@ IEEE IV 2025
 ```
 
 **Updates:**
+
+- 10/07/2025: inference scripts updated.
 - 25/06/2025: training and inference code released.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [SemanticKITTI Dataset](#semantickitti-dataset)
+- [Ground truth generation](#ground-truth-generation)
+- [Training the model](#training-the-model)
+- [Model Weights](#model-weights)
+- [Inference](#inference)
+- [Evaluation](#evaluation)
+- [Citation](#citation)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Installation
 
@@ -32,6 +48,7 @@ The code uses **Python 3.7**.
 conda create --name lidpm python=3.7
 conda activate lidpm
 ```
+
 #### Clone the project and install requirements:
 
 ```bash
@@ -45,9 +62,11 @@ pip install -r requirements.txt
 export TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
 pip install -U git+https://github.com/NVIDIA/MinkowskiEngine --install-option="--blas=openblas" --install-option="--force_cuda" -v --no-deps
 ```
+
 ## SemanticKITTI Dataset
 
-The SemanticKITTI dataset has to be download from the official [webpage](http://www.semantic-kitti.org/dataset.html#download) and extracted in the following structure:
+The SemanticKITTI dataset has to be downloaded from the
+official [webpage](http://www.semantic-kitti.org/dataset.html#download) and extracted in the following structure:
 
 ```
 SemanticKITTI
@@ -62,18 +81,22 @@ SemanticKITTI
             |       ├── 000000.label
             |       ├── 000001.label
             |       └── ...
+            ├── ...
             ├── 08/ # for validation
+            ├── ...
             ├── 11/ # 11-21 for testing
+            ├── ...
             └── 21/
                 └── ...
 ```
 
 ## Ground truth generation
 
-To generate the complete scenes run the `map_from_scans.py` script. 
-This will use the dataset scans and poses to generate the sequence map to be used as the ground truth during training.
+To generate the complete scenes, run the `map_from_scans.py` script.
+This uses the dataset scans and poses to generate sequence maps, which serve as ground truth during training.
 
 Specify the SemanticKITTI path and the output path in the corresponding config file.
+
 ```
 cd lidpm/scripts
 python map_from_scans.py configs/map_from_scans.yaml
@@ -85,19 +108,22 @@ python map_from_scans.py configs/map_from_scans.yaml
   <img src="./media/training_pipeline.png" width="50%" />
 </p>
 
-For training the diffusion model, the configurations are defined in `config/train.yaml`, and the training can be started with:
+To train the diffusion model, the configurations are defined in `config/train.yaml`, and the training can be started
+with:
 
 ```
 cd lidpm
 python train.py --config config/train.yaml
 ```
+
 Don't forget to specify the `data_dir` and `gt_map_dir` in the config file.
 
-The training was performed on 4 NVIDIA A100 GPUs for 40 epochs.
+The model was trained on 4 NVIDIA A100 GPUs for 40 epochs.
 
 ## Model Weights
 
-You can download the pre-trained model checkpoint from the [GitHub release](https://github.com/astra-vision/LiDPM/releases/tag/v1.0-weights).
+The pre-trained model checkpoint can be downloaded from
+the [GitHub release](https://github.com/astra-vision/LiDPM/releases/tag/v1.0-weights).
 
 ## Inference
 
@@ -106,17 +132,42 @@ You can download the pre-trained model checkpoint from the [GitHub release](http
 </p>
 
 To complete the lidar scans, run
+
 ```
-cd scripts
+cd lidpm/scripts
 python inference.py configs/inference.yaml
 ```
-In the corresponding config you should specify the path to the diffusion checkpoint, dataset path, and output folder, 
-and decide if you want to run inference on a particular sequence or over the list of predefined pointclouds 
+
+In the corresponding config you should specify the path to the diffusion checkpoint, dataset path, and output folder,
+and decide if you want to run inference on a particular sequence or over the list of predefined pointclouds
 (configured in `canonical_minival_filename`).
+
+#### DPM-Solver
+
+In order to speed up inference, we follow [LiDiff](https://github.com/PRBonn/LiDiff/tree/main) and
+employ [DPM-Solver](https://arxiv.org/abs/2206.00927).
+To complete the lidar scans using DPM-Solver, run
+
+```
+cd lidpm/scripts
+python inference_dpmSolver.py configs/inference_dpmSolver.yaml
+```
+
+The number of DPM-Solver steps is configured via `denoising_steps`, and the corresponding number of diffusion steps is
+set via `starting_point`.
+For insights into these parameters, refer to Table 2 ("Ablation studies") in the paper.
+By default, we use `denoising_steps=20` and `starting_point=300`, as suggested by our ablation.
+
+## Evaluation
+
+For evaluation on SemanticKITTI, we follow the protocol from [LiDiff](https://github.com/PRBonn/LiDiff/tree/main).
+The results reported in Table 1 of the paper were obtained using the above model checkpoint and DPM-Solver inference (20
+steps).
+To report "LiDPM with refinement" results, we use the off-the-shelf LiDiff refinement network.
 
 ## Citation
 
-If you build upon LiDPM paper or code, please cite the following paper:
+If you build upon LiDPM paper or code, please cite our paper:
 
 ```
 @INPROCEEDINGS{martyniuk2025lidpm,
@@ -134,5 +185,6 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 ## Acknowledgments
 
 This code is developed upon the [LiDiff](https://github.com/PRBonn/LiDiff/tree/main) codebase.
-We modify it to depart from the "local" diffusion paradigm to the "global" one presented in [LiDPM](https://astra-vision.github.io/LiDPM/) paper.
+We modify it to depart from the "local" diffusion paradigm to the "global" one presented
+in [LiDPM](https://astra-vision.github.io/LiDPM/) paper.
 We thank the authors of LiDiff for making their work publicly available.

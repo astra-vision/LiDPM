@@ -22,6 +22,7 @@ IEEE IV 2025
 
 **Updates:**
 
+- 15/07/2025: SemanticKITTI validation set results updated (see [Evaluation](#evaluation)).
 - 10/07/2025: inference scripts updated.
 - 25/06/2025: training and inference code released.
 
@@ -160,10 +161,111 @@ By default, we use `denoising_steps=20` and `starting_point=300`, as suggested b
 
 ## Evaluation
 
-For evaluation on SemanticKITTI, we follow the protocol from [LiDiff](https://github.com/PRBonn/LiDiff/tree/main).
-The results reported in Table 1 of the paper were obtained using the above model checkpoint and DPM-Solver inference (20
-steps).
-To report "LiDPM with refinement" results, we use the off-the-shelf LiDiff refinement network.
+For evaluation on SemanticKITTI, we follow the protocol from [LiDiff](https://github.com/PRBonn/LiDiff/blob/main/lidiff/utils/eval_path.py).
+The results are obtained using the LiDPM model checkpoint (see [Model Weights](#model-weights)) and DPM-Solver inference (20 steps).
+To report "LiDPM (refined)" results, we use the off-the-shelf [LiDiff refinement network](https://github.com/PRBonn/LiDiff?tab=readme-ov-file#trained-model).
+
+### Updated Table 1 (SemanticKITTI validation set)
+
+Below are the evaluation results on the SemanticKITTI validation set, based on the [updated LiDiff metrics code](https://github.com/PRBonn/LiDiff/commit/e5305f93d1d9d9ad09fc033a6dc3408e061401c3) and incorporating [the revised values](https://github.com/PRBonn/LiDiff/issues/45#issuecomment-3047799268).
+
+<table>
+  <tr>
+    <th rowspan="2">Method</th>
+    <th rowspan="2">Output</th>
+    <th rowspan="2">JSD 3D &darr;</th>
+    <th rowspan="2">JSD BEV &darr;</th>
+    <th colspan="3">Voxel IoU (m) &uarr;</th>
+    <th rowspan="2">CD &darr;</th>
+  </tr>
+  <tr>
+    <th>0.5</th>
+    <th>0.2</th>
+    <th>0.1</th>
+  </tr>
+  <tr>
+    <td>LMSCNet</td>
+    <td>Voxel</td>
+    <td>-</td>
+    <td>0.431</td>
+    <td>30.83</td>
+    <td>12.09</td>
+    <td>3.65</td>
+    <td>0.641</td>
+  </tr>
+  <tr>
+    <td>LODE</td>
+    <td>Surface</td>
+    <td>-</td>
+    <td>0.451</td>
+    <td>33.81</td>
+    <td>16.39</td>
+    <td>5.0</td>
+    <td>1.029</td>
+  </tr>
+  <tr>
+    <td>MID</td>
+    <td>Surface</td>
+    <td>-</td>
+    <td>0.470</td>
+    <td>31.58</td>
+    <td>22.72</td>
+    <td>13.14</td>
+    <td>0.503</td>
+  </tr>
+  <tr>
+    <td>PVD</td>
+    <td>Points</td>
+    <td>-</td>
+    <td>0.498</td>
+    <td>15.91</td>
+    <td>3.97</td>
+    <td>0.6</td>
+    <td>1.256</td>
+  </tr>
+  <tr>
+    <td>LiDiff (diffusion-only)</td>
+    <td>Points</td>
+    <td>0.564</td>
+    <td>0.444</td>
+    <td>31.47</td>
+    <td>16.79</td>
+    <td>4.67</td>
+    <td>0.434</td>
+  </tr>
+  <tr>
+    <td><strong>LiDPM (diffusion-only)</strong></td>
+    <td>Points</td>
+    <td><strong>0.532</strong></td>
+    <td>0.440</td>
+    <td>34.09</td>
+    <td>19.45</td>
+    <td>6.27</td>
+    <td>0.446</td>
+  </tr>
+  <tr>
+    <td>LiDiff (refined)</td>
+    <td>Points</td>
+    <td>0.573</td>
+    <td>0.416</td>
+    <td>32.43</td>
+    <td>22.99</td>
+    <td>13.40</td>
+    <td><strong>0.376</strong></td>
+  </tr>
+  <tr>
+    <td><strong>LiDPM (refined)</strong></td>
+    <td>Points</td>
+    <td>0.542</td>
+    <td><strong>0.403</strong></td>
+    <td><strong>36.59</strong></td>
+    <td><strong>25.76</strong></td>
+    <td><strong>14.93</strong></td>
+    <td>0.377</td>
+  </tr>
+</table>
+
+
 
 ## Citation
 

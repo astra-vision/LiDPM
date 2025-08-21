@@ -273,11 +273,15 @@ If you build upon LiDPM paper or code, please cite our paper:
 
 ```
 @INPROCEEDINGS{martyniuk2025lidpm,
-      author    = {Martyniuk, Tetiana and Puy, Gilles and Boulch, Alexandre and Marlet, Renaud and de Charette, Raoul},
-      booktitle = {2025 IEEE Intelligent Vehicles Symposium (IV)},
-      title     = {LiDPM: Rethinking Point Diffusion for Lidar Scene Completion},
-      year      = {2025},
-    }
+  author={Martyniuk, Tetiana and Puy, Gilles and Boulch, Alexandre and Marlet, Renaud and de Charette, Raoul},
+  booktitle={2025 IEEE Intelligent Vehicles Symposium (IV)}, 
+  title={LiDPM: Rethinking Point Diffusion for Lidar Scene Completion}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={555-560},
+  doi={10.1109/IV64158.2025.11097538}
+}
 ```
 
 ## License
